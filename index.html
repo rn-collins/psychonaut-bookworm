@@ -201,6 +201,57 @@ nav{position:sticky;top:0;z-index:100;background:rgba(242,237,228,0.97);backdrop
 .nlm-toggle{font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--forest);cursor:pointer;margin-top:0.4rem;display:inline-block}
 .nlm-guest{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--forest);letter-spacing:0.03em;margin-top:0.5rem;font-style:italic}
 </style>
+<link rel="sitemap" type="application/xml" href="/sitemap.xml"/>
+<meta name="robots" content="index, follow"/>
+<script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+<script>
+(function(){
+  var p=new URLSearchParams(location.search),u={};
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){if(p.get(k))u[k]=p.get(k);});
+  if(Object.keys(u).length)sessionStorage.setItem('rn_utm',JSON.stringify(u));
+  window._getUTM=function(){try{return JSON.parse(sessionStorage.getItem('rn_utm')||'{}')}catch(e){return{}}};
+  window.addEventListener('load',function(){
+    fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({event:'page_view',source:'psychonaut-bookworm',referrer:document.referrer||'direct',utm:window._getUTM()})
+    }}).catch(function(){});
+  });
+  var ms=[25,50,75,90],fired={};
+  window.addEventListener('scroll',function(){
+    var h=document.body.scrollHeight-window.innerHeight;if(h<=0)return;
+    var pct=Math.round((window.scrollY/h)*100);
+    ms.forEach(function(m){if(pct>=m&&!fired[m]){fired[m]=1;
+      fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({event:'scroll_depth',source:'psychonaut-bookworm',depth:m+'%'})}}).catch(function(){});
+    }});
+  },{passive:true});
+})()
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": "https://rn-portfolio-khaki.vercel.app/#rn-collins",
+      "name": "RN Collins",
+      "jobTitle": "AI Educator & Consultant",
+      "url": "https://rn-portfolio-khaki.vercel.app",
+      "sameAs": [
+        "https://linkedin.com/in/rn-collins"
+      ]
+    },
+    {
+      "@type": "WebPage",
+      "name": "Psychonaut Bookworm \u2014 RN Collins",
+      "url": "https://psychonaut-bookworm.vercel.app",
+      "author": {
+        "@id": "https://rn-portfolio-khaki.vercel.app/#rn-collins"
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
@@ -1713,5 +1764,48 @@ function renderCourse(el) {
     </div>
   </div>
 </footer>
+
+<!-- Contact the Architect -->
+<div style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999">
+  <button onclick="document.getElementById('ca-modal').style.display='flex'"
+    style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;background:#B8842A;
+    color:#fff;border:none;padding:.55rem 1.1rem;border-radius:2rem;cursor:pointer;
+    box-shadow:0 2px 12px rgba(0,0,0,.35)">Contact the Architect</button>
+</div>
+<div id="ca-modal" role="dialog" aria-modal="true"
+  style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.8);
+  align-items:center;justify-content:center">
+  <div style="background:#fff;max-width:420px;width:90%;padding:2rem;border-radius:4px">
+    <h2 style="margin:0 0 1rem">Contact the Architect</h2>
+    <input id="ca-name" placeholder="Name (optional)"
+      style="width:100%;padding:.6rem;margin-bottom:.75rem;border:1px solid #ccc;box-sizing:border-box"/>
+    <input id="ca-email" type="email" placeholder="Email (required)"
+      style="width:100%;padding:.6rem;margin-bottom:.75rem;border:1px solid #ccc;box-sizing:border-box"/>
+    <textarea id="ca-msg" rows="3" placeholder="Message"
+      style="width:100%;padding:.6rem;margin-bottom:.75rem;border:1px solid #ccc;box-sizing:border-box;resize:vertical"></textarea>
+    <div style="display:flex;gap:.75rem;justify-content:flex-end">
+      <button onclick="document.getElementById('ca-modal').style.display='none'"
+        style="background:none;border:1px solid #ccc;padding:.5rem 1rem;cursor:pointer">Cancel</button>
+      <button id="ca-send"
+        style="background:#1B7A68;color:#fff;border:none;padding:.5rem 1rem;cursor:pointer">Send</button>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('ca-send').onclick=function(){
+  var e=document.getElementById('ca-email').value;
+  if(!e){alert('Email is required');return;}
+  fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name:document.getElementById('ca-name').value,email:e,
+    message:document.getElementById('ca-msg').value,source:'contact-architect-psychonaut-bookworm'})})
+  .then(function(){document.getElementById('ca-modal').style.display='none';alert('Sent!');})
+  .catch(function(){alert('Error. Please try again.');});
+};
+</script>
+
+<div style="text-align:center;padding:.75rem 1rem;font-size:.7rem;border-top:1px solid rgba(0,0,0,.1);margin-top:2rem">
+  Built by <a href="https://rn-portfolio-khaki.vercel.app" target="_blank" rel="noopener"
+  style="color:#1B7A68;text-decoration:none">RN Builds</a> — explore all AI tools and projects.
+</div>
 </body>
 </html>
