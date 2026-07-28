@@ -1798,7 +1798,7 @@ function renderCourse(el) {
 document.getElementById('ca-send').onclick=function(){
   var e=document.getElementById('ca-email').value;
   if(!e){alert('Email is required');return;}
-  fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
+  fetch('https://rn-api.vercel.app/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({name:document.getElementById('ca-name').value,email:e,
     message:document.getElementById('ca-msg').value,source:'contact-architect-psychonaut-bookworm'})})
   .then(function(){document.getElementById('ca-modal').style.display='none';alert('Sent!');})
