@@ -214,7 +214,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(242,237,228,0.97);backdrop
   window.addEventListener('load',function(){
     fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({event:'page_view',source:'psychonaut-bookworm',referrer:document.referrer||'direct',utm:window._getUTM()})
-    }}).catch(function(){});
+    }).catch(function(){});
   });
   var ms=[25,50,75,90],fired={};
   window.addEventListener('scroll',function(){
@@ -222,7 +222,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(242,237,228,0.97);backdrop
     var pct=Math.round((window.scrollY/h)*100);
     ms.forEach(function(m){if(pct>=m&&!fired[m]){fired[m]=1;
       fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({event:'scroll_depth',source:'psychonaut-bookworm',depth:m+'%'})}}).catch(function(){});
+        body:JSON.stringify({event:'scroll_depth',source:'psychonaut-bookworm',depth:m+'%'})}).catch(function(){});
     }});
   },{passive:true});
 })()
@@ -1865,8 +1865,9 @@ document.getElementById('ca-send').onclick=function(){
 </script>
 
 <div style="text-align:center;padding:.75rem 1rem;font-size:.7rem;border-top:1px solid rgba(0,0,0,.1);margin-top:2rem">
-  Built by <a href="https://rn-portfolio-khaki.vercel.app" target="_blank" rel="noopener"
-  style="color:#1B7A68;text-decoration:none">RN Builds</a> — explore all AI tools and projects.
+  Built by <a href="https://aloha-ai-consulting.vercel.app" target="_blank" rel="noopener"
+  style="color:#1B7A68;text-decoration:none">Aloha AI</a>. Explore all AI tools and projects at <a href="https://rn-portfolio-khaki.vercel.app" target="_blank" rel="noopener"
+  style="color:#1B7A68;text-decoration:none">RN Builds</a>.
 </div>
 </body>
 </html>
