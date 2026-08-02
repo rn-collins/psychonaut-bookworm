@@ -272,7 +272,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(242,237,228,0.97);backdrop
   <span class="mono" style="color:var(--tan)">1,399 pieces · 14 content types</span>
 </nav>
 <div style="background:#FFF8E7;border-left:4px solid #B8842A;padding:12px 16px;margin-bottom:24px;font-size:13px;color:#5A4000;border-radius:0 4px 4px 0;">
-  <strong>Note:</strong> This tool is for informational purposes only and does not constitute legal advice. Consult a qualified legal professional before making decisions.
+  <strong>Note:</strong> This is an independent editorial reading and media library, not clinical, legal, or therapeutic guidance. Historical and legal context reflects editorial research, not advice — consult a qualified professional for your specific situation.
 </div>
 
 <div class="tab-bar" id="tabBar">
@@ -492,7 +492,7 @@ function renderOverview(el) {
     {n:D.notebookLM.length,label:'NotebookLM Packs',sub:'paste-ready for audio generation',sec:'notebookLM'},
   ];
   const total = Object.values(COUNTS).reduce((a,b)=>a+b,0);
-  el.innerHTML = '<div class="page-hero"><p class="eyebrow">Fat Nugs Magazine</p><h1 class="page-title serif">Psychonaut Bookworm</h1><p class="page-sub">Complete media library — every content type across all production plans. ' + total + ' finished pieces across 14 content types. Click any card to explore.</p></div>' +
+  el.innerHTML = '<div class="page-hero"><p class="eyebrow">Fat Nugs Magazine</p><h1 class="page-title serif">Psychonaut Bookworm</h1><p class="page-sub">A curated psychedelics reading and media library for facilitators, clinicians, researchers, and curious readers who want the history and the science without the marketing gloss — ' + total + ' finished pieces across 14 content types, each one sourced and citable. Click any card to explore.</p></div>' +
     '<div class="wrap"><div class="ov-grid">' +
     labels.map((item, i) =>
       '<div class="ov-card" data-sec="' + item.sec + '" onclick="showSection(this.dataset.sec)">' +
@@ -1762,6 +1762,37 @@ function renderCourse(el) {
   };
 }
 </script>
+<section id="reading-list" style="max-width:1100px;margin:3rem auto 0;padding:2rem 2.5rem;background:var(--cream);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)">
+  <p class="eyebrow">Not Sure Where to Start</p>
+  <h2 class="serif" style="font-size:1.5rem;font-weight:900;margin-bottom:0.5rem">Get a Reading List Matched to What You're Actually Curious About</h2>
+  <p style="font-size:0.9rem;color:var(--muted);line-height:1.65;max-width:640px;margin-bottom:1.25rem">1,399 pieces across 14 formats is a lot to browse cold. Tell us the angle you care about and where to send it — we'll reply with a short, hand-picked reading list pulled from this library instead of the whole thing at once.</p>
+  <div style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:flex-start">
+    <select id="rl-theme" style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;padding:0.6rem 0.8rem;border:1px solid var(--rule);background:var(--paper);min-width:200px">
+      <option value="history">History &amp; culture</option>
+      <option value="neuroscience">Neuroscience &amp; mechanism</option>
+      <option value="therapy">Clinical &amp; therapeutic</option>
+      <option value="policy">Policy &amp; decriminalization</option>
+      <option value="indigenous">Indigenous &amp; decolonization</option>
+      <option value="philosophy">Philosophy &amp; consciousness</option>
+    </select>
+    <input id="rl-email" type="email" placeholder="Your email address" style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;padding:0.6rem 0.8rem;border:1px solid var(--rule);background:var(--paper);flex:1;min-width:220px">
+    <button onclick="submitReadingList()" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.65rem 1.2rem;background:var(--ink);color:var(--paper);border:none;cursor:pointer">Send Me a List</button>
+  </div>
+  <p id="rl-msg" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:var(--forest)">Got it — a hand-picked list is on its way to your inbox.</p>
+</section>
+<script>
+function submitReadingList(){
+  var email = document.getElementById('rl-email').value.trim();
+  var theme = document.getElementById('rl-theme').value;
+  if(!email) return;
+  fetch('https://rn-api.vercel.app/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:email,theme:theme,source:'psychonaut-bookworm-reading-list',url:window.location.href})
+  }).catch(function(){});
+  document.getElementById('rl-msg').style.display='block';
+  document.getElementById('rl-email').value='';
+}
+</script>
+
 <section style="max-width:1100px;margin:2.5rem auto 0;padding:0 2.5rem">
   <p class="eyebrow">Elsewhere in the Ecosystem</p>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem">
