@@ -1823,7 +1823,7 @@ function submitReadingList(){
   if(!document.getElementById('rl-consent').checked){ msg.style.display='block'; msg.style.color='var(--sienna)'; msg.textContent='Confirm consent before sending.'; return; }
   msg.style.display='block'; msg.style.color='var(--muted)'; msg.textContent='Submitting your request…';
   fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:email,theme:theme,source:'psychonaut-bookworm-reading-list',url:window.location.href})
+    body:JSON.stringify({email:email,theme:theme,consent:true,source:'psychonaut-bookworm-reading-list',url:window.location.href})
   }).then(function(response){
     if(!response.ok) throw new Error('Request failed with status '+response.status);
     msg.style.color='var(--forest)';
@@ -1910,7 +1910,7 @@ document.getElementById('ca-send').onclick=function(){
   button.disabled=true; button.textContent='Sending…';
   fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({name:document.getElementById('ca-name').value,email:e,
-    message:document.getElementById('ca-msg').value,source:'contact-architect-psychonaut-bookworm'})})
+    message:document.getElementById('ca-msg').value,consent:true,source:'contact-architect-psychonaut-bookworm'})})
   .then(function(response){
     if(!response.ok) throw new Error('Request failed with status '+response.status);
     document.getElementById('ca-modal').style.display='none';
