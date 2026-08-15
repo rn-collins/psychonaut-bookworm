@@ -1819,7 +1819,7 @@ function renderCourse(el) {
 <section id="reading-list" style="max-width:1100px;margin:3rem auto 0;padding:2rem 2.5rem;background:var(--cream);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)">
   <p class="eyebrow">Not Sure Where to Start</p>
   <h2 class="serif" style="font-size:1.5rem;font-weight:900;margin-bottom:0.5rem">Get a Reading List Matched to What You're Actually Curious About</h2>
-  <p style="font-size:0.9rem;color:var(--muted);line-height:1.65;max-width:640px;margin-bottom:1.25rem">1,399 pieces across 14 formats is a lot to browse cold. Tell us the angle you care about and where to send it — we'll reply with a short, hand-picked reading list pulled from this library instead of the whole thing at once.</p>
+  <p style="font-size:0.9rem;color:var(--muted);line-height:1.65;max-width:640px;margin-bottom:1.25rem">1,399 pieces across 14 formats is a lot to browse cold. Tell us the angle you care about and where to send it — submit a request for a short, hand-picked reading list pulled from this library. A request is not an automated delivery; RN will review it before responding.</p>
   <div style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:flex-start">
     <select id="rl-theme" style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;padding:0.6rem 0.8rem;border:1px solid var(--rule);background:var(--paper);min-width:200px">
       <option value="history">History &amp; culture</option>
@@ -1832,18 +1832,27 @@ function renderCourse(el) {
     <input id="rl-email" type="email" placeholder="Your email address" style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;padding:0.6rem 0.8rem;border:1px solid var(--rule);background:var(--paper);flex:1;min-width:220px">
     <button onclick="submitReadingList()" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.65rem 1.2rem;background:var(--ink);color:var(--paper);border:none;cursor:pointer">Send Me a List</button>
   </div>
-  <p id="rl-msg" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:var(--forest)">Got it — a hand-picked list is on its way to your inbox.</p>
+  <p id="rl-msg" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:var(--forest)">Request received. RN will review your topic and respond if a tailored list can be prepared.</p>
 </section>
 <script>
 function submitReadingList(){
-  var email = document.getElementById('rl-email').value.trim();
-  var theme = document.getElementById('rl-theme').value;
-  if(!email) return;
+  var emailEl=document.getElementById('rl-email');
+  var msg=document.getElementById('rl-msg');
+  var email=emailEl.value.trim();
+  var theme=document.getElementById('rl-theme').value;
+  if(!email){ msg.style.display='block'; msg.style.color='var(--sienna)'; msg.textContent='Enter an email address to request a list.'; return; }
+  msg.style.display='block'; msg.style.color='var(--muted)'; msg.textContent='Submitting your request…';
   fetch('https://rn-api-rn-collins.vercel.app/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({email:email,theme:theme,source:'psychonaut-bookworm-reading-list',url:window.location.href})
-  }).catch(function(){});
-  document.getElementById('rl-msg').style.display='block';
-  document.getElementById('rl-email').value='';
+  }).then(function(response){
+    if(!response.ok) throw new Error('Request failed with status '+response.status);
+    msg.style.color='var(--forest)';
+    msg.textContent='Request received. RN will review your topic and respond if a tailored list can be prepared.';
+    emailEl.value='';
+  }).catch(function(){
+    msg.style.color='var(--sienna)';
+    msg.textContent='The request could not be submitted. Please use the contact form or try again later.';
+  });
 }
 </script>
 
@@ -1908,13 +1917,20 @@ function submitReadingList(){
 </div>
 <script>
 document.getElementById('ca-send').onclick=function(){
-  var e=document.getElementById('ca-email').value;
+  var button=this;
+  var e=document.getElementById('ca-email').value.trim();
   if(!e){alert('Email is required');return;}
+  button.disabled=true; button.textContent='Sending…';
   fetch('https://rn-api-rn-collins.vercel.app/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({name:document.getElementById('ca-name').value,email:e,
     message:document.getElementById('ca-msg').value,source:'contact-architect-psychonaut-bookworm'})})
-  .then(function(){document.getElementById('ca-modal').style.display='none';alert('Sent!');})
-  .catch(function(){alert('Error. Please try again.');});
+  .then(function(response){
+    if(!response.ok) throw new Error('Request failed with status '+response.status);
+    document.getElementById('ca-modal').style.display='none';
+    alert('Message received.');
+  })
+  .catch(function(){alert('The message could not be sent. Please try again later.');})
+  .finally(function(){button.disabled=false;button.textContent='Send';});
 };
 </script>
 
