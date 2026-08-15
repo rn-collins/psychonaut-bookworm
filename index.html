@@ -215,40 +215,16 @@ nav{position:sticky;top:0;z-index:100;background:rgba(242,237,228,0.97);backdrop
 </style>
 <link rel="sitemap" type="application/xml" href="/sitemap.xml"/>
 <meta name="robots" content="index, follow"/>
-<script defer src="/_vercel/insights/script.js"></script>
-<script defer src="/_vercel/speed-insights/script.js"></script>
-<script>
-(function(){
-  var p=new URLSearchParams(location.search),u={};
-  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){if(p.get(k))u[k]=p.get(k);});
-  if(Object.keys(u).length)sessionStorage.setItem('rn_utm',JSON.stringify(u));
-  window._getUTM=function(){try{return JSON.parse(sessionStorage.getItem('rn_utm')||'{}')}catch(e){return{}}};
-  window.addEventListener('load',function(){
-    fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({event:'page_view',source:'psychonaut-bookworm',referrer:document.referrer||'direct',utm:window._getUTM()})
-    }).catch(function(){});
-  });
-  var ms=[25,50,75,90],fired={};
-  window.addEventListener('scroll',function(){
-    var h=document.body.scrollHeight-window.innerHeight;if(h<=0)return;
-    var pct=Math.round((window.scrollY/h)*100);
-    ms.forEach(function(m){if(pct>=m&&!fired[m]){fired[m]=1;
-      fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({event:'scroll_depth',source:'psychonaut-bookworm',depth:m+'%'})}).catch(function(){});
-    }});
-  },{passive:true});
-})()
-</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "Person",
-      "@id": "https://rn-portfolio-khaki.vercel.app/#rn-collins",
+      "@id": "https://rn-selected-work.vercel.app/#rn-collins",
       "name": "RN Collins",
       "jobTitle": "AI Educator & Consultant",
-      "url": "https://rn-portfolio-khaki.vercel.app",
+      "url": "https://rn-selected-work.vercel.app",
       "sameAs": [
         "https://linkedin.com/in/rn-collins"
       ]
@@ -258,7 +234,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(242,237,228,0.97);backdrop
       "name": "Psychonaut Bookworm \u2014 RN Collins",
       "url": "https://psychonaut-bookworm.vercel.app",
       "author": {
-        "@id": "https://rn-portfolio-khaki.vercel.app/#rn-collins"
+        "@id": "https://rn-selected-work.vercel.app/#rn-collins"
       }
     }
   ]
@@ -279,7 +255,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(242,237,228,0.97);backdrop
 <nav>
   <div style="display:flex;flex-direction:column;gap:0.05rem;cursor:pointer" onclick="showSection('overview')">
     <span class="brand serif" style="font-size:1rem;font-weight:900;letter-spacing:-0.01em">RN Collins</span>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:0.5rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">🍄 Psychonaut Bookworm &nbsp;·&nbsp; Hosted by Fat Nugs Magazine</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:0.5rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">🍄 Psychonaut Bookworm &nbsp;·&nbsp; Independent concept developed for Fat Nugs Magazine</span>
   </div>
   <span class="mono" style="color:var(--tan)">1,399 pieces · 14 content types</span>
 </nav>
@@ -439,6 +415,7 @@ function researchIndex(){
 }
 function getQueue(){try{return JSON.parse(localStorage.getItem('pbw-research-queue')||'[]')}catch(e){return[]}}
 function setQueue(q){localStorage.setItem('pbw-research-queue',JSON.stringify(q));renderResearchResults()}
+function clearQueue(){if(!getQueue().length)return;if(window.confirm('Clear the reading queue saved in this browser?')){localStorage.removeItem('pbw-research-queue');renderResearchResults();}}
 function toggleQueue(key){const q=getQueue();const i=q.indexOf(key);if(i>=0)q.splice(i,1);else q.push(key);setQueue(q)}
 function exportQueue(kind){
  const idx=researchIndex(), q=getQueue().map(k=>idx.find(x=>x.key===k)).filter(Boolean);
@@ -449,7 +426,7 @@ function renderResearch(el){
  const books=[...new Set(D.pieces.map(x=>x.book).filter(Boolean))].sort();
  el.innerHTML='<div class="page-hero"><p class="eyebrow">Search · assess · save</p><h1 class="page-title serif">Research Desk</h1><p class="page-sub">Search original drafts, evidence comparisons, flashcards, and science annotations. Each result exposes its internal status and the number of source entries currently attached.</p></div>'+
  '<div class="wrap"><div class="truth-panel"><strong>Collection truth:</strong> 1,399 is the number of indexed editorial objects across 14 formats. It does not mean 1,399 externally published, peer-reviewed, licensed, or independently fact-checked works. The library contains 238 full editorial drafts plus derivative learning and planning objects. Long quotation and passage excerpts are withheld or shortened pending item-level rights review.</div>'+
- '<div class="research-controls"><input id="research-q" placeholder="Search titles, books, themes, and text…" oninput="renderResearchResults()"><select id="research-type" onchange="renderResearchResults()"><option value="all">All object types</option><option>Editorial draft</option><option>Then vs. Now</option><option>Flashcard</option><option>Science annotation</option></select><select id="research-book" onchange="renderResearchResults()"><option value="all">All books</option>'+books.map(x=>'<option>'+x+'</option>').join('')+'</select><button class="queue-btn" onclick="exportQueue(\'md\')">Export queue</button></div>'+
+ '<div class="research-controls"><input id="research-q" placeholder="Search titles, books, themes, and text…" oninput="renderResearchResults()"><select id="research-type" onchange="renderResearchResults()"><option value="all">All object types</option><option>Editorial draft</option><option>Then vs. Now</option><option>Flashcard</option><option>Science annotation</option></select><select id="research-book" onchange="renderResearchResults()"><option value="all">All books</option>'+books.map(x=>'<option>'+x+'</option>').join('')+'</select><button class="queue-btn" onclick="exportQueue(\'md\')">Export queue</button><button class="queue-btn" onclick="clearQueue()">Clear saved queue</button></div><p class="research-meta">Saved items stay only in this browser on this device; there is no account sync. Use “Clear saved queue” to delete them.</p>'+
  '<div id="research-summary" class="research-meta"></div><div id="research-results" class="research-results"></div>'+
  '<h2 class="serif" style="margin-top:2.25rem">Evidence & rights ledger</h2><table class="ledger"><thead><tr><th>Object type</th><th>Count</th><th>Public treatment</th></tr></thead><tbody>'+
  '<tr><td>Original editorial drafts</td><td>'+D.pieces.length+'</td><td>Full text; internal editorial state and source count shown.</td></tr>'+
@@ -1829,7 +1806,8 @@ function renderCourse(el) {
       <option value="indigenous">Indigenous &amp; decolonization</option>
       <option value="philosophy">Philosophy &amp; consciousness</option>
     </select>
-    <input id="rl-email" type="email" placeholder="Your email address" style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;padding:0.6rem 0.8rem;border:1px solid var(--rule);background:var(--paper);flex:1;min-width:220px">
+    <input id="rl-email" type="email" autocomplete="email" aria-label="Your email address" placeholder="Your email address" style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;padding:0.6rem 0.8rem;border:1px solid var(--rule);background:var(--paper);flex:1;min-width:220px">
+    <label style="font-size:.72rem;line-height:1.3;max-width:260px"><input id="rl-consent" type="checkbox"> I consent to RN Collins receiving my email and selected topic to respond to this request.</label>
     <button onclick="submitReadingList()" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.65rem 1.2rem;background:var(--ink);color:var(--paper);border:none;cursor:pointer">Send Me a List</button>
   </div>
   <p id="rl-msg" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:var(--forest)">Request received. RN will review your topic and respond if a tailored list can be prepared.</p>
@@ -1841,14 +1819,17 @@ function submitReadingList(){
   var email=emailEl.value.trim();
   var theme=document.getElementById('rl-theme').value;
   if(!email){ msg.style.display='block'; msg.style.color='var(--sienna)'; msg.textContent='Enter an email address to request a list.'; return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ msg.style.display='block'; msg.style.color='var(--sienna)'; msg.textContent='Enter a valid email address.'; return; }
+  if(!document.getElementById('rl-consent').checked){ msg.style.display='block'; msg.style.color='var(--sienna)'; msg.textContent='Confirm consent before sending.'; return; }
   msg.style.display='block'; msg.style.color='var(--muted)'; msg.textContent='Submitting your request…';
-  fetch('https://rn-api-rn-collins.vercel.app/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:email,theme:theme,source:'psychonaut-bookworm-reading-list',url:window.location.href})
+  fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:email,theme:theme,consent:true,source:'psychonaut-bookworm-reading-list',url:window.location.href})
   }).then(function(response){
     if(!response.ok) throw new Error('Request failed with status '+response.status);
     msg.style.color='var(--forest)';
     msg.textContent='Request received. RN will review your topic and respond if a tailored list can be prepared.';
     emailEl.value='';
+    document.getElementById('rl-consent').checked=false;
   }).catch(function(){
     msg.style.color='var(--sienna)';
     msg.textContent='The request could not be submitted. Please use the contact form or try again later.';
@@ -1884,7 +1865,7 @@ function submitReadingList(){
       <a href="https://fatnu.gs" target="_blank" rel="noopener noreferrer" style="font-size:0.62rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--sienna);text-decoration:none;border:1px solid var(--sienna);padding:0.35rem 0.85rem;font-family:monospace">Fat Nugs Magazine →</a>
     </div>
     <div style="border-top:1px solid rgba(196,168,130,0.2);padding-top:0.75rem;font-size:0.55rem;letter-spacing:0.04em;color:rgba(242,237,228,0.45);line-height:1.7;font-family:monospace">
-      All book titles, author names, and quotations remain the intellectual property of their respective rights holders. This is an independent editorial concept—not an accredited course, clinical resource, or publisher-authorized edition. Quotation and passage excerpts are shortened while permissions and fair-use context are reviewed. No affiliate compensation is represented in this release.
+      All book titles, author names, and quotations remain the intellectual property of their respective rights holders. This is an independent editorial concept—not an accredited course, clinical resource, or publisher-authorized edition. Quotation and passage excerpts are shortened while permissions and fair-use context are reviewed. No affiliate compensation is represented in this release. Saved reading-queue data remains only in this browser and is not synchronized to an account. This site does not use tracking cookies, automatic page-view beacons, or third-party analytics. Inquiry details are sent only after explicit consent and are used to respond to the request. Rights, citation, or correction requests may be submitted through the contact form.
     </div>
   </div>
 </footer>
@@ -1907,6 +1888,8 @@ function submitReadingList(){
       style="width:100%;padding:.6rem;margin-bottom:.75rem;border:1px solid #ccc;box-sizing:border-box"/>
     <textarea id="ca-msg" rows="3" placeholder="Message"
       style="width:100%;padding:.6rem;margin-bottom:.75rem;border:1px solid #ccc;box-sizing:border-box;resize:vertical"></textarea>
+    <label style="display:block;font-size:.78rem;line-height:1.35;margin-bottom:.75rem"><input id="ca-consent" type="checkbox"> I consent to RN Collins receiving these details to respond to this inquiry.</label>
+    <p id="ca-status" role="status" style="min-height:1.2em;font-size:.78rem;color:#8B3A0F;margin-bottom:.5rem"></p>
     <div style="display:flex;gap:.75rem;justify-content:flex-end">
       <button onclick="document.getElementById('ca-modal').style.display='none'"
         style="background:none;border:1px solid #ccc;padding:.5rem 1rem;cursor:pointer">Cancel</button>
@@ -1919,25 +1902,39 @@ function submitReadingList(){
 document.getElementById('ca-send').onclick=function(){
   var button=this;
   var e=document.getElementById('ca-email').value.trim();
-  if(!e){alert('Email is required');return;}
+  var status=document.getElementById('ca-status');
+  if(!e){status.textContent='Email is required.';return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){status.textContent='Enter a valid email address.';return;}
+  if(!document.getElementById('ca-consent').checked){status.textContent='Confirm consent before sending.';return;}
+  status.textContent='';
   button.disabled=true; button.textContent='Sending…';
-  fetch('https://rn-api-rn-collins.vercel.app/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
+  fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({name:document.getElementById('ca-name').value,email:e,
-    message:document.getElementById('ca-msg').value,source:'contact-architect-psychonaut-bookworm'})})
+    message:document.getElementById('ca-msg').value,consent:true,source:'contact-architect-psychonaut-bookworm'})})
   .then(function(response){
     if(!response.ok) throw new Error('Request failed with status '+response.status);
     document.getElementById('ca-modal').style.display='none';
-    alert('Message received.');
+    status.textContent='';
+    document.getElementById('ca-consent').checked=false;
   })
-  .catch(function(){alert('The message could not be sent. Please try again later.');})
+  .catch(function(){status.textContent='The message could not be sent. Please try again later.';})
   .finally(function(){button.disabled=false;button.textContent='Send';});
 };
 </script>
 
 <div style="text-align:center;padding:.75rem 1rem;font-size:.7rem;border-top:1px solid rgba(0,0,0,.1);margin-top:2rem">
   Built by <a href="https://aloha-ai-consulting.vercel.app" target="_blank" rel="noopener"
-  style="color:#1B7A68;text-decoration:none">Aloha AI</a>. Explore all AI tools and projects at <a href="https://rn-portfolio-khaki.vercel.app" target="_blank" rel="noopener"
+  style="color:#1B7A68;text-decoration:none">Aloha AI</a>. Explore all AI tools and projects at <a href="https://rn-selected-work.vercel.app" target="_blank" rel="noopener"
   style="color:#1B7A68;text-decoration:none">RN Builds</a>.
 </div>
+<script>
+(function(){
+  var tabs=Array.from(document.querySelectorAll('.tab')),bar=document.getElementById('tabBar');
+  if(bar)bar.setAttribute('role','tablist');
+  tabs.forEach(function(tab,i){tab.setAttribute('role','tab');tab.setAttribute('tabindex',tab.classList.contains('active')?'0':'-1');tab.setAttribute('aria-selected',tab.classList.contains('active')?'true':'false');tab.addEventListener('keydown',function(event){var next=i;if(event.key==='ArrowRight')next=(i+1)%tabs.length;else if(event.key==='ArrowLeft')next=(i-1+tabs.length)%tabs.length;else if(event.key==='Home')next=0;else if(event.key==='End')next=tabs.length-1;else if(event.key==='Enter'||event.key===' '){event.preventDefault();tab.click();return;}else return;event.preventDefault();tabs[next].focus();tabs[next].click();});});
+  var originalShow=window.showSection;window.showSection=function(section){originalShow(section);tabs.forEach(function(tab){var active=tab.id==='tab-'+section;tab.setAttribute('aria-selected',active?'true':'false');tab.setAttribute('tabindex',active?'0':'-1');});history.replaceState(null,'','#'+section);};
+  var requested=location.hash.slice(1);if(requested&&document.getElementById('tab-'+requested))window.showSection(requested);
+})();
+</script>
 </body>
 </html>
