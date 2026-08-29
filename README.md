@@ -1,6 +1,6 @@
 # The Psychonaut Bookworm — Research & Learning Library
 
-Psychonaut Bookworm is an independent research and learning library indexing 1,399 editorial objects across psychedelic literature, with source visibility, rights-review notes, and a saved research qu
+Psychonaut Bookworm is an independent research and learning library across psychedelic literature: 454 published editorial objects drawn from a 1,664-record provenance ledger, with per-item source visibility, rights-review notes, and a saved research qu
 
 **Live:** https://psychonaut-bookworm.vercel.app
 
