@@ -244,8 +244,8 @@ def sec_overview(D, facts):
         '<div class="page-hero">'
         '<p class="eyebrow">Independent research &amp; learning library</p>'
         '<h1 class="page-title serif" id="h-overview">Psychonaut Bookworm</h1>'
-        f'<p class="page-sub">{facts["total"]} published editorial objects across '
-        f'{facts["formats"]} formats, on {facts["books"]} books. Original drafts, evidence '
+        f'<p class="page-sub">{facts["total"]} published editorial objects in '
+        f'{facts["formats"]} types, on {facts["books"]} books. Original drafts, evidence '
         'comparisons, study tools, reading lists and source packs — drafts and study material, '
         'not externally published, peer-reviewed, licensed or independently fact-checked work. '
         'Every item shows its own source count and status.</p></div>'
@@ -258,10 +258,10 @@ def sec_overview(D, facts):
         f'{facts["ledger_records"]:,}-record ledger is <a href="/provenance/manifest.json">public</a>, '
         'and <a href="/governance">the rules and the correction route</a> are too.</div>'
         f'<div class="ov-grid">{"".join(grid)}</div>'
-        f'<p class="page-sub">The counts above are the contents of this page. '
-        f'Mini-Essays is a view onto the {facts["mini"]} drafts of that format already counted '
-        f'under Full Editorial Drafts, so the cards sum to more than {facts["total"]}; the '
-        f'{facts["total"]} figure counts each object once.</p>'
+        f'<p class="page-sub">The counts above are the contents of this page. They sum to '
+        f'{facts["card_sum"]} rather than {facts["total"]}, because Mini-Essays is a view onto '
+        f'the {facts["mini"]} drafts of that format already counted under Full Editorial Drafts. '
+        f'The {facts["total"]} figure counts each object once.</p>'
         '</div></section>')
 
 
@@ -419,16 +419,18 @@ def sec_mini(D, facts):
     per_book = facts["mini_per_book"]
     short = [b for b, n in per_book.items() if n < max(per_book.values())]
     perbook_note = (f'{max(per_book.values())} per book for {len(per_book)-len(short)} of the '
-                    f'{len(per_book)} books; {e(", ".join(sorted(short)))} has '
-                    f'{min(per_book.values())} here, the fifth withheld in the ledger'
+                    f'{len(per_book)} books, and {min(per_book.values())} for '
+                    f'{e(", ".join(sorted(short)))}, whose fifth is withheld in the ledger for a '
+                    'missing item-level source'
                     ) if short else f"{max(per_book.values())} per book"
     return (
         '<section class="section" id="miniEssays" aria-labelledby="h-mini">'
-        f'<div class="page-hero"><p class="eyebrow">{perbook_note} · {lo}–{hi} words each</p>'
+        f'<div class="page-hero"><p class="eyebrow">{len(minis)} essays · {lo}–{hi} words each</p>'
         '<h2 class="page-title serif" id="h-mini">Mini-Essays</h2>'
         f'<p class="page-sub">{len(minis)} essays across {facts["books"]} books, reprinted here '
-        'in full. These are the mini-essay-format drafts from Writing shown on their own; they '
-        f'are already counted in the {len(D["pieces"])} drafts, not additional objects.</p></div>'
+        f'in full — {perbook_note}. These are the mini-essay-format drafts from Writing shown on '
+        f'their own; they are already counted in the {len(D["pieces"])} drafts, not additional '
+        'objects.</p></div>'
         + filter_bar("me-f", "me-list", book_pills(m["bookSlug"] for _, m in minis), topic_pills(flat([m for _, m in minis], "themes")), True, "Filter mini-essays")
         + f'<div class="wrap" id="me-list" data-filterable>{"".join(out)}'
         '<p class="no-results" data-empty hidden>No mini-essays match this filter.</p></div></section>')
@@ -492,8 +494,8 @@ def sec_flashcards(D, facts):
         '<h2 class="page-title serif" id="h-fc">Flashcards</h2>'
         '<p class="page-sub">Study prompts for review — not a substitute for source checking. '
         'Citations appear only where present; question and answer are both printed below. '
-        f'{held["records"]} cards are held in the ledger; the rest are withheld until each '
-        'carries an item-level source.</p></div>'
+        f'The ledger holds {held["records"]} flashcard records; the other {held["withheld"]} are '
+        'withheld until each carries an item-level source.</p></div>'
         + filter_bar("fc-f", "fc-list", book_pills(fc.get("bookSlug") for fc in D["flashcards"]), topic_pills(flat(D["flashcards"], "category")), True, "Filter flashcards")
         + '<div class="wrap"><table class="fc-table"><thead><tr>'
         '<th class="fc-th" style="width:35%">Question</th><th class="fc-th">Answer</th>'
@@ -882,9 +884,9 @@ def sec_withheld(sec_id, eyebrow, title, sub, what, ledger):
         f'<p class="page-sub">{sub}</p></div>'
         '<div class="wrap"><p class="held-note">'
         + WITHHELD_NOTE.format(what=what)
-        + f' The ledger holds {ledger["records"]} {what.lower()} records; '
-          f'{ledger["published"]} are published in this edition and {ledger["withheld"]} are '
-          'withheld.</p></div></section>')
+        + f' The ledger holds {ledger["records"]} records of this type: '
+          f'{ledger["published"]} published in this edition, {ledger["withheld"]} withheld.'
+          '</p></div></section>')
 
 
 # ------------------------------------------------------------------- verify
@@ -936,6 +938,7 @@ def main():
                           max(len(m["readings"]) for m in D["courseModules"])),
         "rl_entries": sum(len(r.get("entries") or []) for r in D["readingLists"]),
         "indexed": len(D["pieces"]) + len(D["thenVsNow"]) + len(D["flashcards"]) + len(D["annotations"]),
+        "card_sum": sum(len(v) for v in D.values() if isinstance(v, list)) + len(minis),
         "ledger": ledger,
         "ledger_records": manifest["ledgerRecordCount"],
     }
