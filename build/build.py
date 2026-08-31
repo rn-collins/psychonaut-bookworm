@@ -96,16 +96,77 @@ WITHHELD_NOTE = (
 )
 
 
-def filter_bar(cid, target, topics=None, search=True, label="Filter"):
+def verdict_label(v):
+    """The canonical verdict vocabulary. `gaining-traction` appears once in
+    claimSorter and is not in the original VERDICT_LABEL map, so it fell back to
+    the raw slug; it is titled here rather than dropped."""
+    return VERDICT_LABEL.get(v) or (v or "").replace("_", " ").replace("-", " ").title()
+
+
+def verdict_pills(records, key="verdict"):
+    """Filter pills are derived from the data, so a verdict that exists cannot
+    be unreachable from the filter bar."""
+    order = ["confirmed", "partially_confirmed", "gaining-traction", "unresolved",
+             "refuted", "untestable"]
+    seen = []
+    for r in records:
+        v = r.get(key)
+        if v and v not in seen:
+            seen.append(v)
+    seen.sort(key=lambda v: order.index(v) if v in order else len(order))
+    return [(v, verdict_label(v)) for v in seen]
+
+
+def book_pills(present):
+    """Only offer a book pill when the section actually holds something from
+    that book. The hardcoded 12-pill bar offered Cosmic Serpent on Bridge
+    Pieces, which has none — a filter that can only ever say "no results"."""
+    present = set(present)
+    return [("all", "All Books")] + [(s, l) for s, l in BOOK_PILLS[1:] if s in present]
+
+
+TOPIC_LABELS = {
+    "brain-regions": "Brain Regions", "partially-confirmed": "~ Partial",
+    "confirmed": "✓ Confirmed", "contested": "? Contested", "reversed": "✗ Reversed",
+    "emerging": "◦ Emerging",
+}
+
+
+def topic_pills(values, labels=None):
+    """Derived from the data, most common first. A hardcoded vocabulary put
+    History, Philosophy and Policy on the flashcard bar — none of which any of
+    the ten published cards carries — and left Safety, Neuroplasticity and
+    Brain Regions, which they do carry, with no pill at all."""
+    labels = labels or TOPIC_LABELS
+    counts = {}
+    for v in values:
+        if v:
+            counts[v] = counts.get(v, 0) + 1
+    ordered = sorted(counts, key=lambda v: (-counts[v], v))
+    return [(v, labels.get(v) or v.replace("-", " ").replace("_", " ").title()) for v in ordered]
+
+
+def flat(records, key):
+    out = []
+    for r in records:
+        v = r.get(key)
+        if isinstance(v, list):
+            out.extend(v)
+        elif v:
+            out.append(v)
+    return out
+
+
+def filter_bar(cid, target, books, topics=None, search=True, label="Filter"):
     """A filter bar is inert without JavaScript, so it ships hidden and app.js
     reveals it. The content it filters is already in the document."""
     out = [f'<div class="filter-bar" id="{cid}-filterbar" data-target="{target}" '
            f'data-js-only hidden role="group" aria-label="{e(label)}">']
-    for slug, lab in BOOK_PILLS:
+    for slug, lab in books:
         active = " active" if slug == "all" else ""
         out.append(f'<button type="button" class="filter-pill{active}" data-group="book" '
-                   f'data-val="{slug}" data-cid="{cid}" aria-pressed="{"true" if slug=="all" else "false"}">'
-                   f'{e(lab)}</button>')
+                   f'data-val="{e(slug)}" data-cid="{cid}" '
+                   f'aria-pressed="{"true" if slug=="all" else "false"}">{e(lab)}</button>')
     if topics:
         out.append('<div class="filter-sep"></div>')
         out.append(f'<button type="button" class="filter-pill active" data-group="topic" '
@@ -330,7 +391,7 @@ def sec_writing(D, facts):
         'count of the text published here, measured at build time.</p></div>'
         f'<div class="fmt-bar" id="writing-f-filterbar" data-target="writing-list" data-js-only '
         f'hidden role="group" aria-label="Filter drafts by format">{"".join(tabs)}</div>'
-        + filter_bar("writing-b", "writing-list", None, True, "Filter drafts by book")
+        + filter_bar("writing-b", "writing-list", book_pills(p["bookSlug"] for p in D["pieces"]), topic_pills(flat(D["pieces"], "themes")), True, "Filter drafts by book and theme")
         + f'<div class="wrap" id="writing-list" data-filterable>{items}'
         '<p class="no-results" data-empty hidden>No drafts match this filter.</p></div></section>')
 
@@ -361,10 +422,6 @@ def sec_mini(D, facts):
                     f'{len(per_book)} books; {e(", ".join(sorted(short)))} has '
                     f'{min(per_book.values())} here, the fifth withheld in the ledger'
                     ) if short else f"{max(per_book.values())} per book"
-    topics = [("history", "History"), ("policy", "Policy"), ("philosophy", "Philosophy"),
-              ("culture", "Culture"), ("therapy", "Therapy"), ("pharmacology", "Pharmacology"),
-              ("consciousness", "Consciousness"), ("indigenous", "Indigenous"),
-              ("neuroscience", "Neuroscience"), ("mysticism", "Mysticism")]
     return (
         '<section class="section" id="miniEssays" aria-labelledby="h-mini">'
         f'<div class="page-hero"><p class="eyebrow">{perbook_note} · {lo}–{hi} words each</p>'
@@ -372,7 +429,7 @@ def sec_mini(D, facts):
         f'<p class="page-sub">{len(minis)} essays across {facts["books"]} books, reprinted here '
         'in full. These are the mini-essay-format drafts from Writing shown on their own; they '
         f'are already counted in the {len(D["pieces"])} drafts, not additional objects.</p></div>'
-        + filter_bar("me-f", "me-list", topics, True, "Filter mini-essays")
+        + filter_bar("me-f", "me-list", book_pills(m["bookSlug"] for _, m in minis), topic_pills(flat([m for _, m in minis], "themes")), True, "Filter mini-essays")
         + f'<div class="wrap" id="me-list" data-filterable>{"".join(out)}'
         '<p class="no-results" data-empty hidden>No mini-essays match this filter.</p></div></section>')
 
@@ -402,8 +459,6 @@ def sec_tvn(D, facts):
                + "".join(f"<li>{e(s)}</li>" for s in src) + "</ul>" if src else "")
             + queue_button(f"then:{i}")
             + '</div></div></article>')
-    topics = [("confirmed", "✓ Confirmed"), ("partially-confirmed", "~ Partial"),
-              ("contested", "? Contested"), ("reversed", "✗ Reversed")]
     return (
         '<section class="section" id="thenVsNow" aria-labelledby="h-tvn">'
         '<div class="page-hero"><p class="eyebrow">The Scientific Annotation Layer</p>'
@@ -411,7 +466,7 @@ def sec_tvn(D, facts):
         f'<p class="page-sub">What the books claimed vs. what the science shows now — '
         f'{len(D["thenVsNow"])} comparisons across {facts["books"]} books, each with the source '
         'entries attached to it.</p></div>'
-        + filter_bar("tvn-f", "tvn-list", topics, True, "Filter evidence comparisons")
+        + filter_bar("tvn-f", "tvn-list", book_pills(t.get("bookSlug") for t in D["thenVsNow"]), topic_pills(flat(D["thenVsNow"], "nowStatusBucket")), True, "Filter evidence comparisons")
         + f'<div class="wrap" id="tvn-list" data-filterable>{"".join(out)}'
         '<p class="no-results" data-empty hidden>No comparisons match this filter.</p></div></section>')
 
@@ -430,8 +485,6 @@ def sec_flashcards(D, facts):
             f'<div class="fc-cite">{e(fc.get("citation","") or "no citation recorded")}</div></td>'
             f'<td><span class="fc-diff" style="background:{DIFF_COLOR.get(fc.get("difficulty"),"var(--muted)")}">'
             f'{e(fc.get("difficulty",""))}</span>{queue_button(f"card:{i}")}</td></tr>')
-    topics = [("history", "History"), ("mechanism", "Mechanism"), ("philosophy", "Philosophy"),
-              ("therapeutic", "Therapeutic"), ("pharmacology", "Pharmacology"), ("policy", "Policy")]
     held = facts["ledger"]["flashcards"]
     return (
         '<section class="section" id="flashcards" aria-labelledby="h-fc">'
@@ -441,7 +494,7 @@ def sec_flashcards(D, facts):
         'Citations appear only where present; question and answer are both printed below. '
         f'{held["records"]} cards are held in the ledger; the rest are withheld until each '
         'carries an item-level source.</p></div>'
-        + filter_bar("fc-f", "fc-list", topics, True, "Filter flashcards")
+        + filter_bar("fc-f", "fc-list", book_pills(fc.get("bookSlug") for fc in D["flashcards"]), topic_pills(flat(D["flashcards"], "category")), True, "Filter flashcards")
         + '<div class="wrap"><table class="fc-table"><thead><tr>'
         '<th class="fc-th" style="width:35%">Question</th><th class="fc-th">Answer</th>'
         '<th class="fc-th" style="width:130px">Level</th></tr></thead>'
@@ -472,9 +525,6 @@ def sec_bridges(D, facts):
             + ('<h4 class="card-label">Sources</h4><ul class="src-list">'
                + "".join(f"<li>{e(s)}</li>" for s in src) + "</ul>" if src else "")
             + '</div></article>')
-    topics = [("history", "History"), ("policy", "Policy"), ("philosophy", "Philosophy"),
-              ("consciousness", "Consciousness"), ("indigenous", "Indigenous"),
-              ("therapeutic", "Therapeutic")]
     return (
         '<section class="section" id="bridges" aria-labelledby="h-bridges">'
         '<div class="page-hero"><p class="eyebrow">Cross-Book Connections</p>'
@@ -482,7 +532,7 @@ def sec_bridges(D, facts):
         f'<p class="page-sub">{len(D["bridges"])} pieces connecting books to each other — the '
         'arguments that only become visible when two books are read together. Printed in '
         'full.</p></div>'
-        + filter_bar("bridges-f", "bridges-list", topics, True, "Filter bridge pieces")
+        + filter_bar("bridges-f", "bridges-list", book_pills(flat(D["bridges"], "books")), topic_pills(flat(D["bridges"], "themes")), True, "Filter bridge pieces")
         + f'<div class="wrap" id="bridges-list" data-filterable>{"".join(out)}'
         '<p class="no-results" data-empty hidden>No bridge pieces match this filter.</p>'
         '</div></section>')
@@ -513,7 +563,7 @@ def sec_reading_lists(D, facts):
         f'<p class="page-sub">What to read before, alongside, and after each of the '
         f'{facts["books"]} books — with a specific reason for every pairing. '
         f'{facts["rl_entries"]} entries in all.</p></div>'
-        + filter_bar("readinglists-f", "rl-list", None, True, "Filter reading lists")
+        + filter_bar("readinglists-f", "rl-list", book_pills(r["bookSlug"] for r in D["readingLists"]), None, True, "Filter reading lists")
         + f'<div class="wrap" id="rl-list" data-filterable>{"".join(out)}'
         '<p class="no-results" data-empty hidden>No reading lists match this filter.</p>'
         '</div></section>')
@@ -528,7 +578,7 @@ def sec_annotations(D, facts):
             f'data-key="annotation:{i}">'
             '<div class="ann-head">'
             f'<span class="ann-verdict" style="background:{VERDICT_COLOR.get(a.get("verdict"),"var(--muted)")}">'
-            f'{e(VERDICT_LABEL.get(a.get("verdict"), a.get("verdict","")))}</span>'
+            f'{e(verdict_label(a.get("verdict")))}</span>'
             f'<h3 class="ann-claim">{e(a.get("claim",""))}</h3></div>'
             '<div class="ann-grid">'
             f'<div class="ann-col"><div class="ann-col-label">Claim source</div>'
@@ -539,8 +589,7 @@ def sec_annotations(D, facts):
                if a.get("citation") else "")
             + queue_button(f"annotation:{i}")
             + '</div></div></article>')
-    topics = [("confirmed", "Confirmed"), ("partially_confirmed", "Partial"),
-              ("unresolved", "Unresolved"), ("refuted", "Refuted"), ("untestable", "Untestable")]
+    topics = verdict_pills(D["annotations"])
     return (
         '<section class="section" id="annotations" aria-labelledby="h-ann">'
         '<div class="page-hero"><p class="eyebrow">Right / Wrong / Unresolved</p>'
@@ -550,7 +599,7 @@ def sec_annotations(D, facts):
         'partially confirmed, refuted, unresolved or untestable, with the confidence stated. '
         'The verdicts are editorial readings of the cited literature, not a systematic '
         'review.</p></div>'
-        + filter_bar("annotations-f", "ann-list", topics, True, "Filter annotations")
+        + filter_bar("annotations-f", "ann-list", book_pills(a.get("bookSlug") for a in D["annotations"]), topics, True, "Filter annotations")
         + f'<div class="wrap" id="ann-list" data-filterable>{"".join(out)}'
         '<p class="no-results" data-empty hidden>No annotations match this filter.</p>'
         '</div></section>')
@@ -590,7 +639,7 @@ def sec_notebooklm(D, facts):
         'document, then use the focus questions to generate an audio conversation. Each pack is '
         'self-contained and printed in full here — instructions, source material and questions — '
         'so it can be copied without JavaScript.</p></div>'
-        + filter_bar("nlm-f", "nlm-list", None, True, "Filter source packs")
+        + filter_bar("nlm-f", "nlm-list", book_pills(n.get("bookSlug") for n in D["notebookLM"]), None, True, "Filter source packs")
         + f'<div class="wrap" id="nlm-list" data-filterable>{"".join(out)}'
         '<p class="no-results" data-empty hidden>No packs match this filter.</p>'
         '</div></section>')
@@ -640,7 +689,7 @@ def sec_course(D, facts):
                 f'<details class="cs-item"><summary>{e(c["claim"])}</summary>'
                 f'<p style="margin-top:.6rem"><span class="ann-verdict" style="background:'
                 f'{VERDICT_COLOR.get(c.get("verdict"),"var(--muted)")}">'
-                f'{e(c.get("verdictLabel") or VERDICT_LABEL.get(c.get("verdict"),""))}</span></p>'
+                f'{e(verdict_label(c.get("verdict")))}</span></p>'
                 f'<p style="font-size:.85rem;line-height:1.7;color:var(--muted)">{e(c.get("explanation",""))}</p>'
                 f'<p class="fc-cite">{e(c.get("source",""))}</p></details>'
                 for c in mod_cs))
@@ -759,19 +808,25 @@ def sec_course(D, facts):
 
 
 def sec_claimsorter(D, facts):
-    items = "".join(
-        f'<details class="cs-item" data-obj="Claim" data-book="{e(c.get("book",""))}" '
-        f'data-bookslug="{e(c.get("bookSlug",""))}" data-topic="{e(c.get("verdict",""))}">'
-        f'<summary>{e(c.get("claim",""))}</summary>'
-        f'<p style="margin-top:.6rem"><span class="ann-verdict" style="background:'
-        f'{VERDICT_COLOR.get(c.get("verdict"),"var(--muted)")}">'
-        f'{e(c.get("verdictLabel") or VERDICT_LABEL.get(c.get("verdict"),""))}</span> '
-        f'<span class="mono">{e(c.get("book",""))}</span></p>'
-        f'<p style="font-size:.85rem;line-height:1.7;color:var(--muted)">{e(c.get("explanation",""))}</p>'
-        f'<p class="fc-cite">{e(c.get("source",""))}</p></details>'
-        for c in D["claimSorter"])
-    topics = [("confirmed", "Confirmed"), ("partially_confirmed", "Partial"),
-              ("unresolved", "Unresolved"), ("refuted", "Refuted"), ("untestable", "Untestable")]
+    def claim_html(c):
+        canon = verdict_label(c.get("verdict"))
+        own = (c.get("verdictLabel") or "").strip()
+        nuance = (f' <span class="mono">recorded as “{e(own)}”</span>'
+                  if own and own.lower() != canon.lower() else "")
+        return (
+            f'<details class="cs-item" data-obj="Claim" data-book="{e(c.get("book",""))}" '
+            f'data-bookslug="{e(c.get("bookSlug",""))}" data-topic="{e(c.get("verdict",""))}" '
+            f'data-verdict="{e(canon)}">'
+            f'<summary>{e(c.get("claim",""))}</summary>'
+            f'<p style="margin-top:.6rem"><span class="ann-verdict" style="background:'
+            f'{VERDICT_COLOR.get(c.get("verdict"),"var(--muted)")}">{e(canon)}</span>'
+            f'{nuance} <span class="mono">{e(c.get("book",""))}</span></p>'
+            f'<p style="font-size:.85rem;line-height:1.7;color:var(--muted)">'
+            f'{e(c.get("explanation",""))}</p>'
+            f'<p class="fc-cite">{e(c.get("source",""))}</p></details>')
+
+    items = "".join(claim_html(c) for c in D["claimSorter"])
+    topics = verdict_pills(D["claimSorter"])
     return (
         '<section class="section" id="claimSorter" aria-labelledby="h-cs">'
         '<div class="page-hero"><p class="eyebrow">The deck behind the sorting drill</p>'
@@ -781,7 +836,7 @@ def sec_claimsorter(D, facts):
         f'{facts["total"]} published objects and used to be reachable only inside the Free '
         'University drill; they are printed here so they can be read, cited and checked. Open a '
         'claim to see the verdict — or read it cold first and sort it yourself.</p></div>'
-        + filter_bar("cs-f", "cs-list", topics, True, "Filter claims")
+        + filter_bar("cs-f", "cs-list", book_pills(c.get("bookSlug") for c in D["claimSorter"]), topics, True, "Filter claims")
         + f'<div class="wrap" id="cs-list" data-filterable>{items}'
         '<p class="no-results" data-empty hidden>No claims match this filter.</p></div></section>')
 

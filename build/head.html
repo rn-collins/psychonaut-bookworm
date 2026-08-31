@@ -225,6 +225,11 @@ nav{position:sticky;top:0;z-index:100;background:rgba(242,237,228,0.97);backdrop
 @media(max-width:760px){.research-controls{grid-template-columns:1fr 1fr}.research-controls input{grid-column:1/-1}.research-item{grid-template-columns:1fr}}
 
 /* ---- STATIC RENDER ---- */
+a.ov-card{display:block;text-decoration:none;color:inherit}
+a.ov-card>span{display:block}
+a.ov-card:hover .ov-label{text-decoration:underline}
+a.ov-card-held:hover{transform:none;box-shadow:none}
+nav a{text-decoration:none;color:inherit}
 .tab-bar a.tab{text-decoration:none}
 .tab-bar a.tab[aria-current="true"]{color:var(--ink);border-bottom-color:var(--sienna)}
 .skip-link{position:absolute;left:-9999px;top:0;background:var(--ink);color:var(--cream);padding:.6rem 1rem;z-index:500}

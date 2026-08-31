@@ -321,11 +321,13 @@
   }
 
   function drillClaims() {
-    var claims = $$('#cs-list details').map(function (d) {
-      var verdict = d.querySelector('.ann-verdict');
+    // The canonical verdict lives in data-verdict. The freeform label printed on
+    // some cards ("Confirmed (Phase 2)") is the author's nuance, not a sortable
+    // category — quizzing on it produced 38 buttons for five real answers.
+    var claims = $$('#cs-list details[data-verdict]').map(function (d) {
       return {
         claim: (d.querySelector('summary') || {}).textContent || '',
-        verdict: verdict ? verdict.textContent.trim() : '',
+        verdict: d.getAttribute('data-verdict'),
         why: (d.querySelector('p[style]') || {}).textContent || '',
         node: d
       };
@@ -391,19 +393,27 @@
   // --------------------------------------------------------- section marker
   var links = {};
   $$('#tabBar a[href^="#"]').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
-  if (window.IntersectionObserver && Object.keys(links).length) {
+  var sections = $$('main > section[id]').filter(function (s) { return links[s.id]; });
+  if (sections.length) {
     var current = null;
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        var id = entry.target.id;
-        if (!links[id] || id === current) return;
-        if (current && links[current]) links[current].removeAttribute('aria-current');
-        links[id].setAttribute('aria-current', 'true');
-        current = id;
-      });
-    }, { rootMargin: '-110px 0px -70% 0px' });
-    $$('main > section[id]').forEach(function (s) { io.observe(s); });
+    var pending = false;
+    var markCurrent = function () {
+      pending = false;
+      var y = window.pageYOffset + 140, found = sections[0].id;
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i].offsetTop <= y) found = sections[i].id; else break;
+      }
+      if (found === current) return;
+      if (current && links[current]) links[current].removeAttribute('aria-current');
+      links[found].setAttribute('aria-current', 'true');
+      current = found;
+    };
+    window.addEventListener('scroll', function () {
+      if (pending) return;
+      pending = true;
+      window.requestAnimationFrame(markCurrent);
+    }, { passive: true });
+    markCurrent();
   }
 
   apply();
