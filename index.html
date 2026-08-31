@@ -541,11 +541,12 @@ function renderOverview(el) {
     '<div class="wrap"><div class="truth-panel"><strong>Start with the Research Desk.</strong> Search the library, inspect source counts and status, save a reading queue and export it as Markdown. Five object types below are held back while excerpt rights review is open; the full 1,664-record ledger is <a href="/provenance/manifest.json">public</a>, and <a href="/governance">the rules and the correction route</a> are too.</div><div class="ov-grid">' +
     labels.map((item, i) =>
       (item.held
-        ? '<div class="ov-card ov-card-held" aria-disabled="true">' +
+        ? '<div class="ov-card ov-card-held" role="button" tabindex="0" data-sec="' + item.sec + '"' +
+          ' onclick="openOverviewCard(this)" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openOverviewCard(this)}">' +
           '<div class="ov-n serif" style="color:var(--muted)">&mdash;</div>' +
           '<div class="ov-label">' + item.label + '</div>' +
           '<div class="ov-sub">' + item.sub + '</div>' +
-          '<div class="ov-held">Not in this edition &mdash; rights review open</div>' +
+          '<div class="ov-held">Not in this edition &mdash; rights review open. Open for why.</div>' +
           '</div>'
         : '<div class="ov-card" role="button" tabindex="0" data-sec="' + item.sec + '"' +
           (item.fmt ? ' data-fmt="' + item.fmt + '"' : '') +
@@ -602,6 +603,12 @@ function renderQuotes(el) {
   window['_filterFn_quotes-f'] = function(book,topic,search){ window._quotesBook=book; window._quotesSearch=search; applyQuotesFilter(); };
 }
 function applyQuotesFilter() {
+  // Quote cards are withheld while excerpt rights review is open, so the array
+  // ships empty. Without this the section rendered "0 Cards Published" over an
+  // empty grid — the blank page pbwWithheld exists to prevent. Falling through
+  // on length rather than a flag means the section restores itself the moment
+  // the cards are published.
+  if (!D.quoteCards.length) return pbwWithheld('quotes-list', 'Quote cards');
   var book = window._quotesBook||'all', search=(window._quotesSearch||'').toLowerCase();
   var items = D.quoteCards.filter(q=>{
     if (book!=='all' && (q.bookSlug||q.slug)!==book) return false;
@@ -868,7 +875,7 @@ function applyNotebookLMFilter() {
   }).join('');
 }
 
-// Four object types are withheld from this edition pending rights review; their
+// Five object types are withheld from this edition pending rights review; their
 // sections stay reachable and say so rather than rendering an empty page.
 function pbwWithheld(listId, what) {
   var el = document.getElementById(listId); if (!el) return;
