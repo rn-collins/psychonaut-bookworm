@@ -780,7 +780,7 @@ def sec_course(D, facts):
         '<section class="section" id="course" aria-labelledby="h-course">'
         '<div style="background:linear-gradient(135deg,#1A1410 0%,#2D5A1B 100%);padding:3rem 2rem 2.5rem">'
         f'<p style="font-family:monospace;font-size:0.6rem;letter-spacing:0.12em;'
-        f'text-transform:uppercase;color:#C4A882;margin-bottom:0.5rem">The Psychonaut Bookworm · '
+        f'text-transform:uppercase;color:#D4C0A5;margin-bottom:0.5rem">The Psychonaut Bookworm · '
         f'Free University · {facts["books"]} Books · {len(mods)} Courses</p>'
         '<h2 id="h-course" style="font-family:\'Playfair Display\',serif;'
         'font-size:clamp(1.6rem,4vw,2.6rem);color:#F2EDE4;margin-bottom:0.75rem;line-height:1.2">'
