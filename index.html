@@ -24,7 +24,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Serif+4:opsz,wght@8..60,400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--p:#F2EDE4;--ink:#1A1410;--forest:#2D5A1B;--sienna:#8B3A0F;--sage:#4A6741;--tan:#C4A882;--tan-text:#9e8766;--cream:#FAF7F2;--paper:#EDE8DF;--muted:#6B5E52;--rule:rgba(196,168,130,0.4)}
+:root{--p:#F2EDE4;--ink:#1A1410;--forest:#2D5A1B;--sienna:#8B3A0F;--sage:#4A6741;--tan:#C4A882;--tan-text:#7e6034;--cream:#FAF7F2;--paper:#EDE8DF;--muted:#6B5E52;--rule:rgba(196,168,130,0.4)}
 html{scroll-behavior:smooth}
 body{background:var(--p);color:var(--ink);font-family:'Source Serif 4',Georgia,serif;-webkit-font-smoothing:antialiased}
 nav{position:sticky;top:0;z-index:100;background:rgba(242,237,228,0.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 2rem}
@@ -159,7 +159,12 @@ nav{position:sticky;top:0;z-index:100;background:rgba(242,237,228,0.97);backdrop
 .geo-head{padding:1.1rem 1.25rem;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:1fr auto;align-items:start}
 .geo-location{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.04em;color:var(--muted);margin-top:0.2rem}
 .geo-body{padding:1.1rem 1.25rem;font-size:0.85rem;line-height:1.8;color:var(--ink)}
-.geo-footer{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule)}
+.geo-/* --tan-text is tuned for the cream grounds, where it reads 4.99:1. On the
+   near-black footer the same brown is 3.14:1, so the token is lifted here
+   rather than changed globally — lightening it everywhere broke 84 nodes
+   on cream. */
+footer{--tan-text:#9e8766}
+footer{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule)}
 .geo-fact{padding:0.9rem 1.25rem;font-size:0.8rem;line-height:1.6;color:var(--muted)}
 .geo-fact:first-child{border-right:1px solid var(--rule)}
 
